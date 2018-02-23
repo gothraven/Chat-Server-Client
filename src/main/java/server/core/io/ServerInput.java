@@ -39,14 +39,14 @@ public class ServerInput {
 						msg = buff.readLine();
 						handler.commandePrivateMessage(from, to, msg);
 						break;
-					case "RULIST":
+					case "AULIST":
 						handler.commandeListRequest();
 						break;
 					case "QUIT":
 						handler.commandeLeavingRequest();
 						break;
 					default:
-						throw new ChatProtocolException("Invalid Commande");
+						throw new ChatProtocolException("Invalid Commande :" + line);
 				}
 			}
 		}

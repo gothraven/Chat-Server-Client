@@ -1,10 +1,16 @@
 package server.core;
 
+import server.core.handler.ClientHandler;
 import server.core.logger.IChatLogger;
 import server.core.logger.ServerLogger;
 import server.core.model.ServerModel;
 
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ServerCore extends Thread {
 	private int port;
@@ -15,6 +21,7 @@ public class ServerCore extends Thread {
 
 	public ServerCore (int port) {
 		this.port = port;
+		System.out.println("port is: " + port);
 		logger = new ServerLogger();
 		serverModel = new ServerModel();
 		logger.systemMessage("Server Starting ...");
@@ -22,20 +29,26 @@ public class ServerCore extends Thread {
 	}
 
 	public void run () {
-		/*try (serverSocket = new ServerSocket(port)) {
-			serverSocket.setSoTimeout(1000);
+		try {
+			ServerSocket serverSocket = new ServerSocket(port);
+			serverSocket.setSoTimeout(10000);
 			while (! stop) {
 				try {
-					Socket so = serverSocket.accept();
-					logger.clientConnected(so.toString());
-					new Thread(new ClientHandler(so, serverModel, logger)).start();
-				} catch (SocketTimeoutException e) {
-					e.printStackTrace();
+					Socket socket = serverSocket.accept();
+					logger.clientConnected(socket.toString());
+					new Thread(new ClientHandler(socket, serverModel, logger)).start();
+				} catch (SocketTimeoutException ignored) {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
+			System.out.println("coud not bind the port" + port);
+			Logger.getLogger(ServerCore.class.getName()).log(Level.SEVERE, null, e);
+		}
+	}
+
+	public synchronized void finish () {
+		serverModel.clearAll();
+		stop = true;
 	}
 
 }

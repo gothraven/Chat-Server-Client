@@ -13,16 +13,21 @@ public class ServerModel {
 		this.usersList = new TreeMap<>();
 	}
 
-	public boolean registerUser (String name, ServerModelEvents client) {
-		return ! existUserName(name) && usersList.put(name, client) != null;
+	public synchronized boolean registerUser (String name, ServerModelEvents client) {
+		if (! existUserName(name)) {
+			usersList.put(name, client);
+			notifyListChanged();
+			return true;
+		}
+		return false;
 	}
 
-	public void unregisterUser (String name) {
+	public synchronized void unregisterUser (String name) {
 		if (existUserName(name) && usersList.remove(name) != null)
 			notifyListChanged();
 	}
 
-	public boolean renameUser (String oldname, String newname, ServerModelEvents client) {
+	public synchronized boolean renameUser (String oldname, String newname, ServerModelEvents client) {
 		if (existUserName(oldname) && usersList.remove(oldname) != null && (usersList.put(newname, client) != null)) {
 			notifyListChanged();
 			return true;
@@ -30,27 +35,27 @@ public class ServerModel {
 		return false;
 	}
 
-	public boolean existUserName (String name) {
+	public synchronized boolean existUserName (String name) {
 		return this.usersList.containsKey(name);
 	}
 
-	public Collection<String> getUserNames () {
+	public synchronized Collection<String> getUserNames () {
 		return this.usersList.keySet();
 	}
 
-	public void sendChatMessage (String from, String msg) {
+	public synchronized void sendChatMessage (String from, String msg) {
 		this.usersList.values().forEach(e -> e.chatMessageSent(from, msg));
 	}
 
-	public void sendPrivateChatMessage (String from, String to, String msg) {
+	public synchronized void sendPrivateChatMessage (String from, String to, String msg) {
 		this.usersList.values().forEach(e -> e.privateChatMessageSent(from, to, msg));
 	}
 
-	private void notifyListChanged () {
+	private synchronized void notifyListChanged () {
 		this.usersList.values().forEach(ServerModelEvents:: userListChanged);
 	}
 
-	public void clearAll () {
+	public synchronized void clearAll () {
 		usersList.clear();
 	}
 }

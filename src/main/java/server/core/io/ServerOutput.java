@@ -43,7 +43,7 @@ public class ServerOutput implements ServerOutputProtocol {
 
 	@Override
 	public void sendUserUserList (Collection<String> ulist) {
-		out.println("AULIST");
+		out.println("ULIST");
 		ulist.forEach(out:: println);
 		out.println(".");
 	}

@@ -51,6 +51,7 @@ public class ClientHandler implements Runnable, ServerInputProtocol, ServerModel
 				if (serverModel.registerUser(name, this)) {
 					this.username = name;
 					serverOutput.sendNameOk();
+					state = ClientState.ST_NORMAL;
 				} else {
 					serverOutput.sendNameBad();
 				}
@@ -59,8 +60,10 @@ public class ClientHandler implements Runnable, ServerInputProtocol, ServerModel
 			}
 		} else if (state == ClientState.ST_NORMAL) {
 			if (! name.isEmpty()) {
-				if (! serverModel.renameUser(this.username, name, this))
-					serverOutput.sendNameBad();
+				if (! serverModel.renameUser(this.username, name, this)) {
+					this.username = name;
+					serverOutput.sendNameOk();
+				}
 			} else {
 				serverOutput.sendNameBad();
 			}
@@ -103,7 +106,7 @@ public class ClientHandler implements Runnable, ServerInputProtocol, ServerModel
 
 	@Override
 	public void privateChatMessageSent (String from, String to, String message) {
-		if (username.equals(from) || username.equals(to))
+		if (username.equals(to))
 			serverOutput.sendPrivateMessage(from, to, message);
 	}
 
